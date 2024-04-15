@@ -1,0 +1,8 @@
+{
+    "require": {
+        "firebase/php-jwt": "^6.10",
+        "guzzlehttp/psr7": "^2.6",
+        "nikic/fast-route": "^1.3"
+    }
+    
+}
