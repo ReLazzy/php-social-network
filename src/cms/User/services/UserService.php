@@ -105,7 +105,7 @@ class UserService
 
 
         if (!preg_match('/[0-9]/', $password) || !preg_match('/[A-Z]/', $password) || !preg_match('/[a-z]/', $password)) {
-            return "Пароль должен содержать хотя бы одну цифру, одну заглавную и одну строчную букву.";
+            return "The password must preserve at least one number, one uppercase letter and one lowercase letter.";
         }
 
         return null;
@@ -154,7 +154,14 @@ class UserService
         }
     }
 
+    public static function validateDescription(string $text): ?string
+    {
 
+        if (mb_strlen($text) > 300) {
+            return 'description exceeds maximum length of 300 characters';
+        }
+        return null;
+    }
 
     public static function getList(int $limit, int $offset): array
     {

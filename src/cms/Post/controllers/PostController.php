@@ -158,6 +158,11 @@ class PostController
 
         $feed = PostService::getFeed($userId, $limit, $lastPostId, $currentUser);
 
-        return ResponseHelper::respondWithJson($response, $feed, 200);
+        if ($feed !== null) {
+            return ResponseHelper::respondWithJson($response, $feed, 200);
+        } else {
+
+            return ResponseHelper::respondWithError($response, 'Failed to get Possts', 500);
+        }
     }
 }

@@ -65,7 +65,7 @@ class UserController
 
         $jwtToken = JwtMiddleware::generateJwtToken($user);
 
-        return  ResponseHelper::respondWithJson($response, ['token' => $jwtToken], 200);
+        return  ResponseHelper::respondWithJson($response, ['token' => $jwtToken, "id" => $user->id], 200);
     }
 
 
@@ -84,9 +84,15 @@ class UserController
 
         $birthday = $updateData["birthday"] ?? null;
         $description = $updateData["description"] ?? null;
+
+
+
         $imageId = $updateData["imageId"] ?? null;
 
-
+        $textError = UserService::validateDescription($description);
+        if ($textError !== null) {
+            return ResponseHelper::respondWithError($response, $textError, 400);
+        }
 
         $updateUser = new User($user->id, $user->username, $user->email, null, $birthday, $description, $imageId);
         if ($updateUser->update()) {

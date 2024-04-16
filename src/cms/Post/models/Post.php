@@ -10,9 +10,9 @@ class Post
     public ?int $likes;
     public ?bool $isLike;
     public ?string $name;
+    public ?string $createdAt;
 
-
-    public function __construct(?int $id, int $userId, string $text, ?int $imageId, ?string $imagePath, ?int $likes, ?bool $isLike, ?string $name)
+    public function __construct(?int $id, int $userId, string $text, ?int $imageId, ?string $imagePath, ?int $likes, ?bool $isLike, ?string $name, ?string $createdAt = null)
     {
         $this->id = $id;
         $this->userId = $userId;
@@ -22,6 +22,7 @@ class Post
         $this->imageId = $imageId;
         $this->imagePath = $imagePath;
         $this->name = $name;
+        $this->createdAt = $createdAt;
     }
 
 
@@ -55,6 +56,7 @@ class Post
             'isLike' => $this->isLike,
             'likes' => $this->likes,
             'name' => $this->name,
+            'createdAt' => $this->createdAt,
 
         ];;
     }

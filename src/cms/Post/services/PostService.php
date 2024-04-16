@@ -35,7 +35,8 @@ class PostService
 
     public static function validateText(string $text): ?string
     {
-        if (strlen($text) > 500) {
+
+        if (mb_strlen($text) > 500) {
             return 'Text exceeds maximum length of 500 characters';
         }
         return null;
@@ -89,10 +90,11 @@ class PostService
 
         try {
             $sql = "SELECT p.*, 
-                        i.path AS image_path,
+                        i.path AS image_path, u.username AS 'name',
                         (SELECT COUNT(*) FROM likes WHERE postId = p.id AND userId =:userId) as isLike
                     FROM `posts` p
                     LEFT JOIN `images` i ON p.imageId = i.id
+                    LEFT JOIN `users` u ON p.userId = u.id
                     WHERE p.id = :postId
                     GROUP BY p.id";
 
@@ -139,20 +141,20 @@ class PostService
                 WHERE p.id < :lastPostId OR :lastPostId IS NULL";
 
 
-            if ($currentUser !== null) {
+            if ($currentUser) {
                 $sql .= " AND p.userId = :currentUser";
             }
 
-
+            $sql .= " ORDER BY p.createdAt DESC";
 
             $stmt = $conn->prepare($sql);
             $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
             $stmt->bindValue(':lastPostId', $lastPostId, PDO::PARAM_INT);
             $stmt->bindValue(':userId', $userId, PDO::PARAM_INT);
-            if ($currentUser !== null) {
+            if ($currentUser) {
                 $stmt->bindValue(':currentUser', $currentUser, PDO::PARAM_INT);
             }
-            echo $sql;
+
             $stmt->execute();
 
             $postsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -160,6 +162,7 @@ class PostService
 
             $posts = [];
             foreach ($postsData as $postData) {
+
                 $post = new Post(
                     $postData['id'],
                     $postData['userId'],
@@ -169,14 +172,14 @@ class PostService
                     $postData['likes'],
                     $postData['isLike'],
                     $postData['name'],
+                    $postData['createdAt'],
                 );
                 $posts[] = $post->getData();
             }
 
             return $posts;
         } catch (PDOException $e) {
-
-            return [];
+            return null;
         }
     }
 }
