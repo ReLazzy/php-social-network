@@ -127,29 +127,28 @@ class PostService
             return null;
         }
     }
-    public static function getFeed(int $userId, int $limit, ?int $lastPostId, ?int $currentUser): array
+    public static function getFeed(int $userId, int $limit, ?int $nextPostId, ?int $currentUser): array
     {
         $db = Database::getInstance();
         $conn = $db->getConnection();
 
         try {
             $sql = "SELECT p.*, 
-                    i.path AS image_path,
-                    u.username AS 'name',
-                    (SELECT COUNT(*) FROM likes WHERE postId = p.id AND userId = :userId) as isLike
-                    FROM `posts` p LEFT JOIN `images` i ON p.imageId = i.id LEFT JOIN `users` u ON p.userId = u.id
-                WHERE p.id < :lastPostId OR :lastPostId IS NULL";
-
+                i.path AS image_path,
+                u.username AS 'name',
+                (SELECT COUNT(*) FROM likes WHERE postId = p.id AND userId = :userId) as isLike
+                FROM `posts` p LEFT JOIN `images` i ON p.imageId = i.id LEFT JOIN `users` u ON p.userId = u.id
+            WHERE (p.id < :nextPostId OR :nextPostId IS NULL)";
 
             if ($currentUser) {
                 $sql .= " AND p.userId = :currentUser";
             }
 
-            $sql .= " ORDER BY p.createdAt DESC";
+            $sql .= " ORDER BY p.createdAt DESC LIMIT :limit";
 
             $stmt = $conn->prepare($sql);
             $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-            $stmt->bindValue(':lastPostId', $lastPostId, PDO::PARAM_INT);
+            $stmt->bindValue(':nextPostId', $nextPostId, PDO::PARAM_INT);
             $stmt->bindValue(':userId', $userId, PDO::PARAM_INT);
             if ($currentUser) {
                 $stmt->bindValue(':currentUser', $currentUser, PDO::PARAM_INT);
@@ -162,7 +161,6 @@ class PostService
 
             $posts = [];
             foreach ($postsData as $postData) {
-
                 $post = new Post(
                     $postData['id'],
                     $postData['userId'],
@@ -177,7 +175,9 @@ class PostService
                 $posts[] = $post->getData();
             }
 
-            return $posts;
+            $nextPostId = !empty($postsData) ? $postsData[count($postsData) - 1]['id'] : null;
+
+            return ['posts' => $posts, 'nextPostId' => $nextPostId];
         } catch (PDOException $e) {
             return null;
         }

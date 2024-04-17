@@ -79,13 +79,11 @@ class UserController
         }
         $updateData = $request->getBody();
         if (empty($updateData)) {
-            return ResponseHelper::respondWithError($response, 'Update data is missing', 400);
+            return ResponseHelper::respondWithJson($response, ['Update data is missing'], 200);
         }
 
         $birthday = $updateData["birthday"] ?? null;
         $description = $updateData["description"] ?? null;
-
-
 
         $imageId = $updateData["imageId"] ?? null;
 
